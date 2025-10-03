@@ -5,7 +5,7 @@ It communicates with an Arduino running the **Servo17_sketch and optionally supp
 
 ---
 
-## ✨ Features
+ Features
 
 - Control up to **16 RC servos** using sliders and buttons.
 - Toggle individual servos active/inactive.
@@ -22,7 +22,7 @@ It communicates with an Arduino running the **Servo17_sketch and optionally supp
 
 ---
 
-## 🛠 Requirements
+ Requirements
 
 - [Processing IDE](https://processing.org/) (tested with 3.x+).
 - [Arduino IDE](https://www.arduino.cc/en/software).
@@ -34,7 +34,7 @@ Processing Libraries:
 
 ---
 
-## ⚙️ Setup
+ Setup
 
 1. Upload the Arduino firmware (`Servo17_sketch`) to your Arduino.
 2. Connect servos to your Arduino pins (or PWM shield channels).
@@ -44,7 +44,7 @@ Processing Libraries:
 
 ---
 
-## 🎛 User Interface
+ User Interface
 
 - **Sliders (per servo):** Move servo between 0°–180°.
 - **Buttons (per servo):**
@@ -79,7 +79,7 @@ Hotkeys:
 
 ---
 
-## 💾 File Management
+ File Management
 
 - Settings are saved as `data/<name>_settings.txt`.
 - Unified format stores **servo limits, states, and labels** together.
@@ -91,7 +91,7 @@ data/<sketchName>_PWMShield_FIXED.ino
 
 ---
 
-## 🚀 Exported Arduino Sketch
+ Exported Arduino Sketch
 
 The exported `.ino` file includes:
 - Smooth motion control using millis() (non-blocking).
@@ -101,7 +101,7 @@ The exported `.ino` file includes:
 
 ---
 
-## ⚡ Quick Start Example
+ Quick Start Example
 
 Here’s a step-by-step workflow to go from servo setup to an exported sketch:
 
