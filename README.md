@@ -1,7 +1,7 @@
-# Webrobotix Servo Controller (Processing)
+# Webrobotix Servo Controller (Processing / Arduino)
 
 This Processing sketch provides a **16-channel RC servo controller interface** with sequence recording and Arduino sketch export.  
-It communicates with an Arduino running the **Servo17_sketch (No EEPROM version)** and optionally supports the **Adafruit 16-Channel 12-bit PWM/Servo Shield**.
+It communicates with an Arduino running the **Servo17_sketch and optionally supports the **Adafruit 16-Channel 12-bit PWM/Servo Shield**.
 
 ---
 
