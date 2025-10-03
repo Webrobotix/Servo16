@@ -80,6 +80,15 @@ final color INACTIVE_TEXT_COLOR = color(120);
 final int FILES_PER_PAGE = 10;
 final color PAGE_BUTTON_COLOR = color(100, 150, 255);
 
+// NEW: Variables for smooth keyframe execution
+boolean isExecutingKeyframe = false;
+int executionStartTime = 0;
+int currentKeyframeIndex = 0;
+int[] startPositions = new int[NUM_SERVOS];
+int[] targetPositions = new int[NUM_SERVOS];
+boolean[] keyframeActiveServos = new boolean[NUM_SERVOS];
+int keyframeSpeed = 1000;
+
 // Serial communication
 Serial arduinoPort;
 String[] serialPorts;
@@ -719,43 +728,135 @@ void startSketchNaming() {
   isNamingSketch = true;
   tempSketchName = "";
 }
-
+  
+  // Enhanced cubic ease-in-out function for natural, lifelike movement
+float easeInOutCubic(float t) {
+  if (t < 0.5) {
+    return 4.0 * t * t * t;
+  } else {
+    float f = (2.0 * t) - 2.0;
+    return 1.0 + (f * f * f) / 2.0;
+  }
+}  
+  
+// UPDATED: Update sequence playback with smooth easing
 void updateSequencePlayback() {
   if (playbackIndex >= sequence.size()) {
     isPlayingSequence = false;
-    sequenceStatus = "Sequence complete";
+    isExecutingKeyframe = false;
+    sequenceStatus = "Sequence playback complete";
     sequenceStatusTime = millis();
     return;
   }
   
   ServoKeyframe currentFrame = sequence.get(playbackIndex);
-  int elapsed = millis() - playbackStartTime;
   
-  if (elapsed == 0 || playbackIndex == 0) {
-    executeKeyframe(currentFrame);
-  }
-  
-  if (elapsed >= currentFrame.speed + currentFrame.delay) {
-    playbackIndex++;
-    playbackStartTime = millis();
-    
-    if (playbackIndex < sequence.size()) {
-      executeKeyframe(sequence.get(playbackIndex));
-    }
+  // Handle keyframe execution phases
+  if (!isExecutingKeyframe) {
+    // Start executing new keyframe
+    startKeyframeExecution(currentFrame, playbackIndex);
+  } else {
+    // Continue executing current keyframe with smooth movement
+    updateKeyframeExecution();
   }
 }
 
-void executeKeyframe(ServoKeyframe kf) {
-  if (!connected) return;
+// 4. ADD THESE NEW FUNCTIONS (add after updateSequencePlayback)
+
+// Start smooth execution of a keyframe
+void startKeyframeExecution(ServoKeyframe kf, int keyframeIndex) {
+  isExecutingKeyframe = true;
+  executionStartTime = millis();
+  currentKeyframeIndex = keyframeIndex;
+  keyframeSpeed = kf.speed;
   
+  // Store starting and target positions for all servos
   for (int i = 0; i < NUM_SERVOS; i++) {
-    if (kf.activeServos[i] && servoActive[i]) {
-      servoSliders[i].setValue(kf.positions[i]);
-      updateServoPosition(i, kf.positions[i]);
-      delay(10);
+    startPositions[i] = servoPositions[i];
+    targetPositions[i] = kf.positions[i];
+    keyframeActiveServos[i] = kf.activeServos[i];
+  }
+  
+  println("Starting smooth execution of keyframe " + (keyframeIndex + 1) + 
+          " with " + countActiveServos(kf) + " active servos over " + keyframeSpeed + "ms");
+}
+
+// Update smooth keyframe execution with easing
+void updateKeyframeExecution() {
+  int elapsed = millis() - executionStartTime;
+  ServoKeyframe currentFrame = sequence.get(currentKeyframeIndex);
+  
+  if (elapsed < keyframeSpeed) {
+    // Still in movement phase - apply smooth easing
+    float progress = (float)elapsed / (float)keyframeSpeed;
+    float easedProgress = easeInOutCubic(progress);
+    
+    // Update all active servos with eased positions
+    for (int i = 0; i < NUM_SERVOS; i++) {
+      if (keyframeActiveServos[i] && servoActive[i]) {
+        int deltaPos = targetPositions[i] - startPositions[i];
+        int newPos = startPositions[i] + (int)(deltaPos * easedProgress);
+        newPos = constrain(newPos, 0, 180);
+        
+        // Update slider and send to Arduino
+        servoSliders[i].setValue(newPos);
+        updateServoPosition(i, newPos);
+      }
     }
+  } else if (elapsed < keyframeSpeed + currentFrame.delay) {
+    // In delay phase - ensure final positions are set
+    for (int i = 0; i < NUM_SERVOS; i++) {
+      if (keyframeActiveServos[i] && servoActive[i]) {
+        servoSliders[i].setValue(targetPositions[i]);
+        updateServoPosition(i, targetPositions[i]);
+      }
+    }
+  } else {
+    // Movement and delay complete - move to next keyframe
+    isExecutingKeyframe = false;
+    playbackIndex++;
+    playbackStartTime = millis();
+    
+    println("Completed keyframe " + currentKeyframeIndex + " execution");
   }
 }
+
+//void updateSequencePlayback() {
+//  if (playbackIndex >= sequence.size()) {
+//    isPlayingSequence = false;
+//    sequenceStatus = "Sequence complete";
+//    sequenceStatusTime = millis();
+//    return;
+//  }
+  
+//  ServoKeyframe currentFrame = sequence.get(playbackIndex);
+//  int elapsed = millis() - playbackStartTime;
+  
+//  if (elapsed == 0 || playbackIndex == 0) {
+//    executeKeyframe(currentFrame);
+//  }
+  
+//  if (elapsed >= currentFrame.speed + currentFrame.delay) {
+//    playbackIndex++;
+//    playbackStartTime = millis();
+    
+//    if (playbackIndex < sequence.size()) {
+//      executeKeyframe(sequence.get(playbackIndex));
+//    }
+//  }
+//}
+
+//void executeKeyframe(ServoKeyframe kf) {
+//  if (!connected) return;
+  
+//  for (int i = 0; i < NUM_SERVOS; i++) {
+//    if (kf.activeServos[i] && servoActive[i]) {
+//      servoSliders[i].setValue(kf.positions[i]);
+//      updateServoPosition(i, kf.positions[i]);
+//      delay(10);
+//    }
+//  }
+//}
 
 // NOTE: Full exportArduinoSketch function from original code would go here
 // This is a placeholder - copy the complete function from your original file
@@ -1683,7 +1784,7 @@ void drawFileSelectionDialog() {
   fill(255);
   stroke(0);
   strokeWeight(2);
-  rect(width/2 - 300, height/2 - 200, 600, 400, 10);
+  rect(width/2 - 300, height/2 - 200, 450, 400, 10);
   
   fill(0);
   textAlign(CENTER, CENTER);
@@ -1711,7 +1812,7 @@ void drawFileSelectionDialog() {
       if (i == selectedFileIndex) {
         fill(100, 150, 255);
         noStroke();
-        rect(width/2 - 280, fileY - 12, 560, 24, 5);
+        rect(width/2 - 280, fileY - 12, 400, 24, 5);
       }
       
       fill(selectedFileIndex == i ? color(255) : color(0));
@@ -1742,18 +1843,7 @@ void drawFileSelectionDialog() {
       fill(255);
       textSize(14);
       text("◄ Previous", width/2 -210, height/2 - 165);
-      
-     //if (fileListPage > 0) {
-     // fill(mouseX >= width/2 - 150 && mouseX <= width/2 - 30 && 
-     //      mouseY >= height/2 + 140 && mouseY <= height/2 + 170 ? 
-     //      lerpColor(PAGE_BUTTON_COLOR, color(255), 0.2) : PAGE_BUTTON_COLOR);
-     // stroke(50);
-     // strokeWeight(1);
-     // rect(width/2 - 280, height/2 + 160, 120, 30, 5);
-     // fill(255);
-     // textSize(14);
-     // text("◄ Previous", width/2 -220, height/2 + 175);     
-            
+                       
     }
      if (fileListPage < totalPages - 1) {
       fill(mouseX >= width/2 + 30 && mouseX <= width/2 + 150 && 
@@ -1766,18 +1856,6 @@ void drawFileSelectionDialog() {
       textSize(14);
       text("Next ►", width/2 -210, height/2 - 165);
     }
-    
-    //if (fileListPage < totalPages - 1) {
-    //  fill(mouseX >= width/2 + 30 && mouseX <= width/2 + 150 && 
-    //       mouseY >= height/2 + 140 && mouseY <= height/2 + 170 ? 
-    //       lerpColor(PAGE_BUTTON_COLOR, color(255), 0.2) : PAGE_BUTTON_COLOR);
-    //  stroke(50);
-    //  strokeWeight(1);
-    //  rect(width/2 + 30, height/2 + 140, 120, 30, 5);
-    //  fill(255);
-    //  textSize(14);
-    //  text("Next ►", width/2 + 90, height/2 + 155);
-    //}
     
     fill(0);
     textSize(12);
