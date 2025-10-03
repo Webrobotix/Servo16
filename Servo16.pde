@@ -26,6 +26,7 @@ or losses resulting from the use of this software.
  * UPDATED: Labels and servo settings saved in single file
  * Servo17.1 FIXED: Proper speed control in generated Arduino sketches
  * NEW: Added paging for file selection dialog (10 files per page, 20 files max)
+ * Added Servo easing
  */
 
 import processing.serial.*;
@@ -1958,3 +1959,4 @@ class Button {
     return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
   }
 }
+
