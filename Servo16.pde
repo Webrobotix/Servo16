@@ -16,7 +16,7 @@ or losses resulting from the use of this software.
 
 /*
  * Webrobotix 2020-2025
- * Use Arduino Servo17_sketch (No EEPROM version)
+ * Use Arduino Servo17_sketch 
  * 16-Channel RC Servo Controller Interface with Sequence Recording
  * Controls RC servos via Arduino and Adafruit 16-channel shield
  * Records servo movement sequences and generates Arduino sketches
@@ -1959,4 +1959,5 @@ class Button {
     return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
   }
 }
+
 
