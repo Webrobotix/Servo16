@@ -1,4 +1,5 @@
 
+
 /*
 DISCLAIMER:
 This software is provided "AS IS", without warranty of any kind, express or implied, 
@@ -730,17 +731,18 @@ void startSketchNaming() {
   tempSketchName = "";
 }
   
-  // Enhanced cubic ease-in-out function for natural, lifelike movement
-float easeInOutCubic(float t) {
-  if (t < 0.5) {
-    return 4.0 * t * t * t;
-  } else {
-    float f = (2.0 * t) - 2.0;
-    return 1.0 + (f * f * f) / 2.0;
-  }
-}  
-  
-// UPDATED: Update sequence playback with smooth easing
+//  // Enhanced cubic ease-in-out function for natural, lifelike movement
+//float easeInOutCubic(float t) {
+//  if (t < 0.5) {
+//    return 4.0 * t * t * t;
+//  } else {
+//    float f = (2.0 * t) - 2.0;
+//    return 1.0 + (f * f * f) / 2.0;
+//  }
+//}  
+  // *******************************************************************
+  // *******************************************************************
+// FIXED: Multi-servo playback with smooth easing
 void updateSequencePlayback() {
   if (playbackIndex >= sequence.size()) {
     isPlayingSequence = false;
@@ -754,110 +756,86 @@ void updateSequencePlayback() {
   
   // Handle keyframe execution phases
   if (!isExecutingKeyframe) {
-    // Start executing new keyframe
-    startKeyframeExecution(currentFrame, playbackIndex);
-  } else {
-    // Continue executing current keyframe with smooth movement
-    updateKeyframeExecution();
+    // Start executing new keyframe - ENSURE servos are activated
+    isExecutingKeyframe = true;
+    executionStartTime = millis();
+    currentKeyframeIndex = playbackIndex;
+    keyframeSpeed = currentFrame.speed;
+    
+    // Store starting and target positions AND force activate servos
+    for (int i = 0; i < NUM_SERVOS; i++) {
+      startPositions[i] = servoPositions[i];
+      targetPositions[i] = currentFrame.positions[i];
+      keyframeActiveServos[i] = currentFrame.activeServos[i];
+      
+      // CRITICAL FIX: Force activate servos that are in this keyframe
+      if (currentFrame.activeServos[i] && !servoActive[i]) {
+        servoActive[i] = true;
+        if (connected) {
+          arduinoPort.write("ACTIVE:" + i + ":1\n");
+          delay(10);
+        }
+      }
+    }
+    
+    println("Starting keyframe " + (playbackIndex + 1) + " with " + 
+            countActiveServos(currentFrame) + " servos over " + keyframeSpeed + "ms");
   }
-}
-
-// 4. ADD THESE NEW FUNCTIONS (add after updateSequencePlayback)
-
-// Start smooth execution of a keyframe
-void startKeyframeExecution(ServoKeyframe kf, int keyframeIndex) {
-  isExecutingKeyframe = true;
-  executionStartTime = millis();
-  currentKeyframeIndex = keyframeIndex;
-  keyframeSpeed = kf.speed;
   
-  // Store starting and target positions for all servos
-  for (int i = 0; i < NUM_SERVOS; i++) {
-    startPositions[i] = servoPositions[i];
-    targetPositions[i] = kf.positions[i];
-    keyframeActiveServos[i] = kf.activeServos[i];
-  }
-  
-  println("Starting smooth execution of keyframe " + (keyframeIndex + 1) + 
-          " with " + countActiveServos(kf) + " active servos over " + keyframeSpeed + "ms");
-}
-
-// Update smooth keyframe execution with easing
-void updateKeyframeExecution() {
+  // Continue executing current keyframe with smooth movement
   int elapsed = millis() - executionStartTime;
-  ServoKeyframe currentFrame = sequence.get(currentKeyframeIndex);
   
   if (elapsed < keyframeSpeed) {
-    // Still in movement phase - apply smooth easing
+    // Movement phase - apply smooth easing
     float progress = (float)elapsed / (float)keyframeSpeed;
     float easedProgress = easeInOutCubic(progress);
     
-    // Update all active servos with eased positions
+    // Update ALL servos that were active in the keyframe
     for (int i = 0; i < NUM_SERVOS; i++) {
-      if (keyframeActiveServos[i] && servoActive[i]) {
+      if (keyframeActiveServos[i]) {
         int deltaPos = targetPositions[i] - startPositions[i];
         int newPos = startPositions[i] + (int)(deltaPos * easedProgress);
         newPos = constrain(newPos, 0, 180);
         
-        // Update slider and send to Arduino
         servoSliders[i].setValue(newPos);
-        updateServoPosition(i, newPos);
+        
+        // Direct write to Arduino - bypass updateServoPosition check
+        if (connected) {
+          servoPositions[i] = newPos;
+          arduinoPort.write("S:" + i + ":" + newPos + "\n");
+        }
       }
     }
   } else if (elapsed < keyframeSpeed + currentFrame.delay) {
-    // In delay phase - ensure final positions are set
+    // Delay phase - ensure final positions
     for (int i = 0; i < NUM_SERVOS; i++) {
-      if (keyframeActiveServos[i] && servoActive[i]) {
+      if (keyframeActiveServos[i]) {
         servoSliders[i].setValue(targetPositions[i]);
-        updateServoPosition(i, targetPositions[i]);
+        if (connected) {
+          servoPositions[i] = targetPositions[i];
+          arduinoPort.write("S:" + i + ":" + targetPositions[i] + "\n");
+        }
       }
     }
   } else {
-    // Movement and delay complete - move to next keyframe
+    // Complete - move to next keyframe
     isExecutingKeyframe = false;
     playbackIndex++;
     playbackStartTime = millis();
-    
-    println("Completed keyframe " + currentKeyframeIndex + " execution");
+    println("Completed keyframe " + currentKeyframeIndex);
   }
 }
 
-//void updateSequencePlayback() {
-//  if (playbackIndex >= sequence.size()) {
-//    isPlayingSequence = false;
-//    sequenceStatus = "Sequence complete";
-//    sequenceStatusTime = millis();
-//    return;
-//  }
-  
-//  ServoKeyframe currentFrame = sequence.get(playbackIndex);
-//  int elapsed = millis() - playbackStartTime;
-  
-//  if (elapsed == 0 || playbackIndex == 0) {
-//    executeKeyframe(currentFrame);
-//  }
-  
-//  if (elapsed >= currentFrame.speed + currentFrame.delay) {
-//    playbackIndex++;
-//    playbackStartTime = millis();
-    
-//    if (playbackIndex < sequence.size()) {
-//      executeKeyframe(sequence.get(playbackIndex));
-//    }
-//  }
-//}
+// Enhanced cubic ease-in-out function for natural, lifelike movement
+float easeInOutCubic(float t) {
+  if (t < 0.5) {
+    return 4.0 * t * t * t;
+  } else {
+    float f = (2.0 * t) - 2.0;
+    return 1.0 + (f * f * f) / 2.0;
+  }
+}
 
-//void executeKeyframe(ServoKeyframe kf) {
-//  if (!connected) return;
-  
-//  for (int i = 0; i < NUM_SERVOS; i++) {
-//    if (kf.activeServos[i] && servoActive[i]) {
-//      servoSliders[i].setValue(kf.positions[i]);
-//      updateServoPosition(i, kf.positions[i]);
-//      delay(10);
-//    }
-//  }
-//}
 
 // NOTE: Full exportArduinoSketch function from original code would go here
 // This is a placeholder - copy the complete function from your original file
