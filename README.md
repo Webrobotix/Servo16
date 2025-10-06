@@ -141,15 +141,35 @@ Here’s a step-by-step workflow to go from servo setup to an exported sketch:
 For personal, educational, and prototyping use. Not intended for critical or safety-related applications.
 # RC Servo Controller Program
 
-## Disclaimer
-This software is provided **"AS IS"**, without any warranty of any kind.  
-By using this program, you acknowledge that you do so at your own risk.  
-The author(s) accept no liability for damages, injuries, or losses resulting from their use.
+Terms of Use (Plain Language)
 
-## Safety Notice
-- Always keep hands, hair, and clothing clear of moving parts.
-- Do not exceed manufacturer voltage/current ratings for servos.
-- Do not leave animatronics or servo-driven mechanisms **unattended while powered**.
-- Not designed for life-safety, medical, or critical applications.
-- Adult supervision required for use by minors.
+By downloading, using, or running this RC Servo Controller Program, you agree to the following terms:
+
+**No Warranty**
+
+This program is provided “as is” with no guarantees of safety, performance, or fitness for any purpose.
+
+The author makes no promises that it will work as expected or be error-free.
+
+**User Responsibility**
+
+You are fully responsible for how you use this software and any devices (RC servos, animatronics, mechanisms) connected to it.
+
+Safe setup and operation are entirely your responsibility.
+
+*Safety Requirements**
+
+Do not leave animatronics or servo-driven devices **unattended while powered**.
+
+Keep hands, hair, and clothing away from moving parts.
+
+Not designed for children without direct adult supervision.
+
+Not suitable for life-safety, medical, or critical systems.
+
+**Liability Limitation**
+
+The author is not liable for any injury, damage, or loss that may result from using this software or related hardware.
+
+By using this program, you accept all risk.
 
