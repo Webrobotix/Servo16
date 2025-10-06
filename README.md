@@ -157,7 +157,7 @@ You are fully responsible for how you use this software and any devices (RC serv
 
 Safe setup and operation are entirely your responsibility.
 
-*Safety Requirements**
+**Safety Requirements**
 
 Do not leave animatronics or servo-driven devices **unattended while powered**.
 
