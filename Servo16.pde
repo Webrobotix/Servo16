@@ -1,12 +1,25 @@
 
 
 /*
-DISCLAIMER:
-This software is provided "AS IS", without warranty of any kind, express or implied, 
-including but not limited to the warranties of merchantability, fitness for a particular purpose 
-and noninfringement. In no event shall the author(s) be liable for any claim, damages, or other liability, 
-whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software 
-or the use or other dealings in the software.
+Terms of Use (Plain Language)
+By downloading, using, or running this RC Servo Controller Program, you agree to the following terms:
+
+No Warranty
+This program is provided “as is” with no guarantees of safety, performance, or fitness for any purpose.
+The author makes no promises that it will work as expected or be error-free.
+User Responsibility
+You are fully responsible for how you use this software and any devices (RC servos, animatronics, mechanisms) connected to it.
+Safe setup and operation are entirely your responsibility.
+
+Safety Requirements
+Do not leave animatronics or servo-driven devices unattended while powered.
+Keep hands, hair, and clothing away from moving parts.
+Not designed for children without direct adult supervision.
+Not suitable for life-safety, medical, or critical systems.
+
+Liability Limitation
+The author is not liable for any injury, damage, or loss that may result from using this software or related hardware.
+By using this program, you accept all risk.
 
 WARNING:
 This program controls mechanical devices (RC servos) that may move suddenly and with force. 
@@ -1937,5 +1950,6 @@ class Button {
     return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
   }
 }
+
 
 
