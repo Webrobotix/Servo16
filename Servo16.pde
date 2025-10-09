@@ -849,9 +849,6 @@ float easeInOutCubic(float t) {
   }
 }
 
-
-// NOTE: Full exportArduinoSketch function from original code would go here
-// This is a placeholder - copy the complete function from your original file
 // FIXED: Export Arduino sketch with proper multi-servo simultaneous movement and speed control
 void exportArduinoSketch(String sketchName) {
   if (sequence.size() == 0) {
@@ -1950,6 +1947,7 @@ class Button {
     return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
   }
 }
+
 
 
 
