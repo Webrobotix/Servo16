@@ -135,7 +135,6 @@ Here’s a step-by-step workflow to go from servo setup to an exported sketch:
 
 ---
 
-## 📄 License
 
 © Webrobotix 2020–2025  
 For personal, educational, and prototyping use. Not intended for critical or safety-related applications.
