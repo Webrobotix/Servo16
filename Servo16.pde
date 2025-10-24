@@ -260,7 +260,7 @@ void draw() {
   background(BG_COLOR);
   textAlign(LEFT, TOP);
   textSize(24);
-  text("RC Servo Controller", WINDOW_WIDTH - 700, 15);
+  text("Servo16", WINDOW_WIDTH - 700, 15);
   textSize(16);
   textAlign(RIGHT, TOP);
   text("Webrobotix 2025", WINDOW_WIDTH - 5, 780);
@@ -781,12 +781,19 @@ void updateSequencePlayback() {
       targetPositions[i] = currentFrame.positions[i];
       keyframeActiveServos[i] = currentFrame.activeServos[i];
       
+      // DEBUG: Print what's recorded in the keyframe
+      if (currentFrame.activeServos[i]) {
+        println("  Servo " + i + " in keyframe: start=" + startPositions[i] + 
+                " target=" + targetPositions[i] + " active=" + servoActive[i]);
+      }
+      
       // CRITICAL FIX: Force activate servos that are in this keyframe
       if (currentFrame.activeServos[i] && !servoActive[i]) {
         servoActive[i] = true;
         if (connected) {
           arduinoPort.write("ACTIVE:" + i + ":1\n");
           delay(10);
+          println("    Activated servo " + i);
         }
       }
     }
@@ -812,10 +819,20 @@ void updateSequencePlayback() {
         
         servoSliders[i].setValue(newPos);
         
+        // DEBUG: Print what we're sending
+        if (elapsed < 50) { // Only print first update
+          println("  Servo " + i + ": sending position " + newPos + " (delta=" + deltaPos + ")");
+        }
+        
         // Direct write to Arduino - bypass updateServoPosition check
         if (connected) {
           servoPositions[i] = newPos;
-          arduinoPort.write("S:" + i + ":" + newPos + "\n");
+          String cmd = "S:" + i + ":" + newPos + "\n";
+          arduinoPort.write(cmd);
+          delay(5); // CRITICAL: Small delay between commands to prevent buffer overflow
+          if (elapsed < 50) {
+            println("    Sent: " + cmd.trim());
+          }
         }
       }
     }
@@ -848,6 +865,9 @@ float easeInOutCubic(float t) {
     return 1.0 + (f * f * f) / 2.0;
   }
 }
+
+// ******************************************************************************************
+// ******************************************************************************************
 
 // FIXED: Export Arduino sketch with proper multi-servo simultaneous movement and speed control
 void exportArduinoSketch(String sketchName) {
@@ -1947,7 +1967,3 @@ class Button {
     return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
   }
 }
-
-
-
-
