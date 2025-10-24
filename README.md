@@ -24,7 +24,7 @@ It communicates with an Arduino running the **Servo17_sketch and optionally supp
 
  **Requirements**
 
-- [Processing IDE](https://processing.org/) (tested with 3.x+).
+- [Processing IDE](https://processing.org/) (tested with 4.4.0).
 - [Arduino IDE](https://www.arduino.cc/en/software).
 - Arduino board (Uno, Nano, etc.) running `Servo17_sketch` (no EEPROM version).
 - (Optional) [Adafruit 16-Channel 12-bit PWM/Servo Shield](https://www.adafruit.com/product/1411).
